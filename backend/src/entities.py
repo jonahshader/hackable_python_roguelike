@@ -1,11 +1,11 @@
 """Entities are things that exist in the game world,
 and can be acted upon, or can act on their own."""
-from typing import Optional
-from uuid import uuid4
 from copy import deepcopy
 from enum import Enum
+from typing import Dict, Optional
+from uuid import uuid4
+
 from utils import Vec2
-from typing import Dict
 
 
 class TileType(Enum):
@@ -43,7 +43,6 @@ class Entity:
 
   def update(self, world) -> None:
     """Update the entity's state."""
-    pass
 
 
 class Player(Entity):

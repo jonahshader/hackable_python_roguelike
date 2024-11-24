@@ -1,0 +1,26 @@
+[format]
+indent-after-paren = 2
+indent-string = '  '
+
+[messages control]
+disable = C0330, C0326
+
+[basic]
+good-names = i,j,k,ex,Run,_,fd,fp
+
+[miscellaneous]
+# List of note tags to take into consideration
+notes = FIXME,XXX,TODO
+
+[master]
+# Use multiple processes to speed up Pylint (use "0" for auto)
+jobs = 0
+
+# Discover python modules and packages in the file system subtree
+recursive = yes
+
+# Files or directories to be skipped. They should be base names, not paths
+ignore = CVS
+
+# Add any Python module names here where you want to disable all warnings
+disable = C0111
