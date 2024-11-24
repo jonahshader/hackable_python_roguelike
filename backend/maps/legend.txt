@@ -1,0 +1,8 @@
+#  = wall : Blocks all movable entities from entering this space
+e  = enemy : can move into an adjacent block (7 surrounding blocks) | can attack players and other enemies | different types of enemies signified by color
+B  = boss : can move into an adjacent block (7 surrounding blocks) | can attack players and other enemies | drops loot
+@  = player : can move into an adjacent block (7 surrounding blocks) | can attack players and other enemies
+=  = locked door : must be unlocked with a key
+-  = unlocked door : can be opened or closed
+[=] = locked chest : must be unlocked with a key
+[]  = chest : can be opened and drops loot
