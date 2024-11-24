@@ -25,12 +25,12 @@ or use the GUI in VSCode or PyCharm.
 
 ## Running the server (FastAPI)
 
-Make sure you are in the backend directory, then run:
+Make sure you are in the backend\src directory, then run:
 
 ```bash
-fastapi dev .\src\main.py
+fastapi dev .\main.py
 ```
 or
 ```bash
-uvicorn src.main:app --reload
+uvicorn main:app --reload
 ```
