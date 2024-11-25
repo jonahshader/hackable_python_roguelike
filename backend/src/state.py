@@ -68,6 +68,7 @@ class World:
       self.pos_to_entities[entity.pos] = []
     self.pos_to_entities[entity.pos].append(entity)
     self.uuid_to_entity[entity.uuid] = entity
+    print(f"Added entity: {entity}, {entity.uuid}")
     if isinstance(entity, Player):
       self.players.append(entity)
 

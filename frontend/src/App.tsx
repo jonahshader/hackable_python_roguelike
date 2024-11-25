@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 function App() {
-  const [currentMap, setCurrentMap] = useState<string>('');
-  const [playerId, setPlayerId] = useState<string>('');
-  const [moveResult, setMoveResult] = useState<string>('');
+  const [currentMap, setCurrentMap] = useState<string>("");
+  const [playerId, setPlayerId] = useState<string>("");
+  const [moveResult, setMoveResult] = useState<string>("");
 
   const fetchCurrentMap = async () => {
     try {
@@ -20,7 +20,7 @@ function App() {
       const response = await fetch('http://localhost:8000/add_player');
       const playerId = await response.text();
       setPlayerId(playerId);
-      alert(`Player added with ID: ${playerId}`);
+      console.log(`Player added with ID: ${playerId}`);
     } catch (error) {
       console.error('Error adding player:', error);
     }
@@ -32,7 +32,9 @@ function App() {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:8000/move_player?player_uuid=${playerId}&x=${x}&y=${y}`);
+      const sanitizedPlayerId = playerId.replace(/^"|"$/g, '');
+      console.log(sanitizedPlayerId);
+      const response = await fetch(`http://localhost:8000/move_player?player_uuid=${sanitizedPlayerId}&x=${x}&y=${y}`, { method: 'POST' });
       const result = await response.text();
       setMoveResult(result);
       alert(`Player moved to (${x}, ${y})`);
@@ -55,7 +57,7 @@ function App() {
       <h1>Game Control Panel</h1>
       <div>
         <button onClick={fetchCurrentMap}>Fetch Current Map</button>
-        <pre>{currentMap}</pre>
+        <pre style={{ whiteSpace: "pre-wrap" }}>{currentMap}</pre>
       </div>
       <div>
         <button onClick={addPlayer}>Add Player</button>
