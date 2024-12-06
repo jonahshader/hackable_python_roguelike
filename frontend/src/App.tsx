@@ -1,19 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function App() {
   const [currentMap, setCurrentMap] = useState<string>("");
   const [playerId, setPlayerId] = useState<string>("");
   const [moveResult, setMoveResult] = useState<string>("");
 
-  const fetchCurrentMap = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/current_map');
-      const data = await response.text();
-      setCurrentMap(data);
-    } catch (error) {
-      console.error('Error fetching current map:', error);
+  // Websocket connection
+  useEffect(() => {
+    const socket = new WebSocket('ws://localhost:8000/ws');
+
+    socket.onmessage = (event) => {
+      setCurrentMap(event.data);
+    };
+
+    // Cleanup on unmount
+    // This immediately severs the connection in strict mode lol
+    return () => {
+      socket.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Only add a player if one has not been added yet
+    if (!playerId) {
+      addPlayer();
     }
-  };
+  }, [playerId]);
 
   const addPlayer = async () => {
     try {
@@ -21,6 +33,7 @@ function App() {
       const playerId = await response.text();
       setPlayerId(playerId);
       console.log(`Player added with ID: ${playerId}`);
+      await updateWorld();
     } catch (error) {
       console.error('Error adding player:', error);
     }
@@ -33,11 +46,13 @@ function App() {
     }
     try {
       const sanitizedPlayerId = playerId.replace(/^"|"$/g, '');
-      console.log(sanitizedPlayerId);
-      const response = await fetch(`http://localhost:8000/move_player?player_uuid=${sanitizedPlayerId}&x=${x}&y=${y}`, { method: 'POST' });
+      //console.log(sanitizedPlayerId);
+      const response = await fetch(`http://localhost:8000/move_player?player_uuid=${sanitizedPlayerId}&x=${x}&y=${y}`);
       const result = await response.text();
       setMoveResult(result);
-      alert(`Player moved to (${x}, ${y})`);
+      
+      // Update player position on the map
+      await updateWorld();
     } catch (error) {
       console.error('Error moving player:', error);
     }
@@ -46,32 +61,65 @@ function App() {
   const updateWorld = async () => {
     try {
       await fetch('http://localhost:8000/update', { method: 'POST' });
-      alert('World updated!');
     } catch (error) {
       console.error('Error updating world:', error);
     }
   };
 
+  // New effect for keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!playerId) {
+        alert('Add a player first!');
+        return;
+      }
+      switch (event.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          movePlayer(0, -1);
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          movePlayer(0, 1);
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          movePlayer(-1, 0);
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          movePlayer(1, 0);
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup the event listener on unmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+
+  }, [playerId]); // Include playerId for the handler to have updated info
+
   return (
     <div className="App">
       <h1>Game Control Panel</h1>
       <div>
-        <button onClick={fetchCurrentMap}>Fetch Current Map</button>
+        <h2>Current Map:</h2>
         <pre style={{ whiteSpace: "pre-wrap" }}>{currentMap}</pre>
       </div>
       <div>
-        <button onClick={addPlayer}>Add Player</button>
         <p>Player ID: {playerId}</p>
       </div>
       <div>
-        <button onClick={() => movePlayer(1, 0)}>Move Player Right</button>
-        <button onClick={() => movePlayer(-1, 0)}>Move Player Left</button>
-        <button onClick={() => movePlayer(0, 1)}>Move Player Down</button>
-        <button onClick={() => movePlayer(0, -1)}>Move Player Up</button>
         <p>Move Result: {moveResult}</p>
-      </div>
-      <div>
-        <button onClick={updateWorld}>Update World</button>
       </div>
     </div>
   );
