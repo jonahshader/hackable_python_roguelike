@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Optional, List, Dict
+from typing import List, Dict
 from entities import Entity, Player, TileType, char_to_tiletype
 from utils import Vec2
 from actions import Action, AddEntityAction, MoveAction
@@ -10,17 +10,17 @@ def parse_ascii_map(ascii_map: str) -> 'World':
   lines = ascii_map.strip().split("\n")
   height = len(lines)
   width = len(lines[0])
-  world = World(Vec2(width, height))
+  w = World(Vec2(width, height))
   for y, line in enumerate(lines):
     for x, char in enumerate(line):
       pos = Vec2(x, y)
       tile = char_to_tiletype[char]
       # TODO: parse other entities
       if tile == TileType.PLAYER:
-        world.spawn = pos
+        w.spawn = pos
       else:
-        world.set(pos, tile)
-  return world
+        w.set(pos, tile)
+  return w
 
 
 class World:
@@ -68,6 +68,7 @@ class World:
       self.pos_to_entities[entity.pos] = []
     self.pos_to_entities[entity.pos].append(entity)
     self.uuid_to_entity[entity.uuid] = entity
+    print(f"Added entity: {entity}, {entity.uuid}")
     if isinstance(entity, Player):
       self.players.append(entity)
 
@@ -179,19 +180,19 @@ if __name__ == "__main__":
   running = True
   while running:
     print(world)
-    actions = []
+    player_actions = []
     for player in world.players:
       move = input(f"Move for player {player.uuid}: ")
       if move == "w":
-        actions.append(MoveAction(player.uuid, Vec2(0, -1)))
+        player_actions.append(MoveAction(player.uuid, Vec2(0, -1)))
       elif move == "a":
-        actions.append(MoveAction(player.uuid, Vec2(-1, 0)))
+        player_actions.append(MoveAction(player.uuid, Vec2(-1, 0)))
       elif move == "s":
-        actions.append(MoveAction(player.uuid, Vec2(0, 1)))
+        player_actions.append(MoveAction(player.uuid, Vec2(0, 1)))
       elif move == "d":
-        actions.append(MoveAction(player.uuid, Vec2(1, 0)))
+        player_actions.append(MoveAction(player.uuid, Vec2(1, 0)))
       elif move == " ":
-        actions.append(MoveAction(player.uuid, Vec2(0, 0)))
+        player_actions.append(MoveAction(player.uuid, Vec2(0, 0)))
       else:
         running = False
-    world.update(actions)
+    world.update(player_actions)

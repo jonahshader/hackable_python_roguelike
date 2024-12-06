@@ -1,35 +1,80 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [currentMap, setCurrentMap] = useState<string>("");
+  const [playerId, setPlayerId] = useState<string>("");
+  const [moveResult, setMoveResult] = useState<string>("");
+
+  const fetchCurrentMap = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/current_map');
+      const data = await response.text();
+      setCurrentMap(data);
+    } catch (error) {
+      console.error('Error fetching current map:', error);
+    }
+  };
+
+  const addPlayer = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/add_player');
+      const playerId = await response.text();
+      setPlayerId(playerId);
+      console.log(`Player added with ID: ${playerId}`);
+    } catch (error) {
+      console.error('Error adding player:', error);
+    }
+  };
+
+  const movePlayer = async (x: number, y: number) => {
+    if (!playerId) {
+      alert('Add a player first!');
+      return;
+    }
+    try {
+      const sanitizedPlayerId = playerId.replace(/^"|"$/g, '');
+      console.log(sanitizedPlayerId);
+      const response = await fetch(`http://localhost:8000/move_player?player_uuid=${sanitizedPlayerId}&x=${x}&y=${y}`, { method: 'POST' });
+      const result = await response.text();
+      setMoveResult(result);
+      alert(`Player moved to (${x}, ${y})`);
+    } catch (error) {
+      console.error('Error moving player:', error);
+    }
+  };
+
+  const updateWorld = async () => {
+    try {
+      await fetch('http://localhost:8000/update', { method: 'POST' });
+      alert('World updated!');
+    } catch (error) {
+      console.error('Error updating world:', error);
+    }
+  };
 
   return (
-    <>
+    <div className="App">
+      <h1>Game Control Panel</h1>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <button onClick={fetchCurrentMap}>Fetch Current Map</button>
+        <pre style={{ whiteSpace: "pre-wrap" }}>{currentMap}</pre>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div>
+        <button onClick={addPlayer}>Add Player</button>
+        <p>Player ID: {playerId}</p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <div>
+        <button onClick={() => movePlayer(1, 0)}>Move Player Right</button>
+        <button onClick={() => movePlayer(-1, 0)}>Move Player Left</button>
+        <button onClick={() => movePlayer(0, 1)}>Move Player Down</button>
+        <button onClick={() => movePlayer(0, -1)}>Move Player Up</button>
+        <p>Move Result: {moveResult}</p>
+      </div>
+      <div>
+        <button onClick={updateWorld}>Update World</button>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
