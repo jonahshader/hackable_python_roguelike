@@ -2,6 +2,7 @@
 and can be acted upon, or can act on their own."""
 from copy import deepcopy
 from enum import Enum
+import random
 from typing import Dict, Optional
 from uuid import uuid4
 
@@ -22,6 +23,13 @@ class TileType(Enum):
 
 
 char_to_tiletype: Dict[str, TileType] = {t.value: t for t in TileType}
+
+possible_moves_default = [
+    Vec2(0, -1),  # up
+    Vec2(1, 0),  # right
+    Vec2(0, 1),  # down
+    Vec2(-1, 0),  # left
+]
 
 
 class Entity:
@@ -52,3 +60,15 @@ class Player(Entity):
 
   def priority(self) -> int:
     return 9999
+
+
+class WanderingEnemy(Entity):
+  def __init__(self, pos: Vec2, wander_prob: float = 0.5):
+    super().__init__(pos)
+    self.tile = TileType.ENEMY
+    self.wander_prob = wander_prob
+
+  def update(self, world) -> None:
+    """Move randomly"""
+    if random.random() < self.wander_prob:
+      self.queue_move(random.choice(possible_moves_default))

@@ -6,6 +6,7 @@ import websockets
 import json
 import aiohttp
 
+
 async def get_map_updates(uri, callback):
   """Connects to websocket and handles incoming map updates."""
   async with websockets.connect(uri) as websocket:
@@ -13,23 +14,27 @@ async def get_map_updates(uri, callback):
       map_str = await websocket.recv()
       callback(map_str)
 
+
 async def create_player(session, server):
   """Creates a new player and returns the UUID."""
   async with session.get(f"http://{server}:8000/add_player") as response:
     return await response.text()
 
+
 async def move_player(session, server, uuid, dx, dy):
   """Sends a move request for the player."""
   async with session.get(
-    f"http://{server}:8000/move_player",
-    params={"player_uuid": uuid, "x": dx, "y": dy}
+      f"http://{server}:8000/move_player",
+      params={"player_uuid": uuid, "x": dx, "y": dy}
   ) as response:
     await response.text()
+
 
 async def update_world(session, server):
   """Triggers a world update."""
   async with session.post(f"http://{server}:8000/update") as response:
     await response.text()
+
 
 def render_map(console, map_str):
   """Renders the map using tcod console."""
@@ -51,13 +56,14 @@ def render_map(console, map_str):
 
       console.print(x=x, y=y, string=char, fg=color)
 
+
 async def main():
   # Initialize window
-  WIDTH = 40   # Adjust based on your map size
+  WIDTH = 40
   HEIGHT = 30
 
   tileset = tcod.tileset.load_tilesheet(
-    "terminal8x8_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
+      "terminal8x8_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
   )
 
   # Get server address
@@ -73,16 +79,17 @@ async def main():
     await update_world(session, server)
 
     with tcod.context.new_terminal(
-      WIDTH,
-      HEIGHT,
-      tileset=tileset,
-      title="Roguelike Client",
-      vsync=True,
+        WIDTH,
+        HEIGHT,
+        tileset=tileset,
+        title="Roguelike Client",
+        vsync=True,
     ) as context:
       console = tcod.Console(WIDTH, HEIGHT, order="F")
 
       # Create a callback to update the map
       current_map = None
+
       def update_map(map_str):
         nonlocal current_map
         current_map = map_str
