@@ -35,8 +35,15 @@ def render_map(console, map_str):
   """Renders the map using tcod console."""
   console.clear()
 
+  lines = map_str.split("\n")
+  map_height = len(lines)
+  map_width = max(len(line) for line in lines) if lines else 0
+
+  start_x = (console.width - map_width) // 2
+  start_y = (console.height - map_height) // 2
+
   # Split the map into lines and render each character
-  for y, line in enumerate(map_str.split('\n')):
+  for y, line in enumerate(lines):
     for x, char in enumerate(line):
       if char == '@':
         color = (255, 255, 0)  # Yellow
@@ -49,12 +56,12 @@ def render_map(console, map_str):
       else:
         color = (255, 255, 255)  # Default white
 
-      console.print(x=x, y=y, string=char, fg=color)
+      console.print(x=start_x + x, y=start_y + y, string=char, fg=color)
 
 async def main():
   # Initialize window
-  WIDTH = 40   # Adjust based on your map size
-  HEIGHT = 30
+  WIDTH = 100   # Adjust based on your map size
+  HEIGHT = 100
 
   tileset = tcod.tileset.load_tilesheet(
     "terminal8x8_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
