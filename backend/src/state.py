@@ -1,8 +1,10 @@
+import random
 from copy import deepcopy
-from typing import List, Dict
-from entities import Entity, Player, TileType, char_to_tiletype
-from utils import Vec2
+from typing import Dict, List
+
 from actions import Action, AddEntityAction, MoveAction
+from entities import Entity, Player, WanderingEnemy, TileType, char_to_tiletype
+from utils import Vec2
 
 
 def parse_ascii_map(ascii_map: str) -> 'World':
@@ -18,6 +20,9 @@ def parse_ascii_map(ascii_map: str) -> 'World':
       # TODO: parse other entities
       if tile == TileType.PLAYER:
         w.spawn = pos
+      if tile == TileType.ENEMY:
+        enemy = WanderingEnemy(pos)
+        w.add_entity(enemy)
       else:
         w.set(pos, tile)
   return w
@@ -26,7 +31,7 @@ def parse_ascii_map(ascii_map: str) -> 'World':
 class World:
   """The game world, containing all entities and tiles."""
 
-  def __init__(self, size: Vec2):
+  def __init__(self, size: Vec2, seed: int = 0):
     self.size = deepcopy(size)
     self.tiles = [TileType.EMPTY] * (size.x * size.y)
     self.entities: List[Entity] = []
@@ -34,6 +39,10 @@ class World:
     self.uuid_to_entity: Dict[str, Entity] = {}
     self.players: List[Player] = []
     self.spawn = Vec2(1, 1)
+    self.seed = seed
+    random.seed(seed)
+    self.random_state = random.getstate()
+    # TODO: do random.setstate and random.getstate when serializing
 
   def get(self, pos: Vec2) -> TileType:
     """Get the tile at the given position."""
